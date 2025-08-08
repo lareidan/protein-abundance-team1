@@ -1,0 +1,16 @@
+# split the PPI and sequence embeddings into separate columns by splitting the vector 
+def split_embeddings(df, column_name):
+    embeddings = df[column_name]
+    # Find the embedding length (skip NaN)
+    first_valid = embeddings[embeddings.apply(lambda x: isinstance(x, (list, np.ndarray)))].iloc[0]
+    embedding_length = len(first_valid)
+
+    embeddings_filled = embeddings.apply(
+        lambda x: x if isinstance(x, (list, np.ndarray)) else [np.nan] * embedding_length
+    )
+
+    split_df = pd.DataFrame(embeddings_filled.tolist(), columns=[f'{column_name}_{i}' for i in range(embedding_length)])
+
+    return pd.concat([df.reset_index(drop=True), split_df], axis=1)
+df_mouse = split_embeddings(df_mouse, 'PPI_embeddings')
+df_mouse = split_embeddings(df_mouse, 'sequence_embeddings')
